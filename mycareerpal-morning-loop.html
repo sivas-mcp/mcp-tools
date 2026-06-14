@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyCareerPal — The Morning Loop</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  /* ── MyCareerPal brand tokens (source: mycareerpal-brand-colors.html) ── */
+  --dark:#082C1B;--lime:#AEDF33;--lime-dark:#93C21E;
+  --mint-bg:#EFF6F3;--lime-bg:#F0FAD6;--page-bg:#f8f8f6;--white:#ffffff;
+  --text:#082C1B;--text-soft:#1a3d26;--text-muted:#4d6b4d;
+  --border:#c8dac8;--border-dark:#1d4a2a;
+  --mono:'DM Mono',monospace;--serif:'Playfair Display',Georgia,serif;--sans:'DM Sans',system-ui,sans-serif;
+
+  /* component aliases mapped onto brand tokens */
+  --bg:var(--page-bg);--surface:var(--mint-bg);--card:var(--white);--row:#eef4ee;
+  --green:var(--dark);--gmid:var(--dark);--gbg:var(--mint-bg);--gb:var(--lime-dark);
+  --sub:var(--text-soft);--label:var(--text-muted);
+
+  /* functional accent badges */
+  --gold:#6b4f00;--goldbg:#fff8e0;--goldb:#d4a800;
+  --blue:#003d80;--bluebg:#ddeeff;--blueb:#6699cc;
+  --teal:#004d3d;--tealbg:#ddf5ee;--tealb:#55bbaa;
+  --purple:#3d006e;--purplebg:#f0e4ff;--purpleb:#aa66cc;
+  --red:#5c0000;--redbg:#fff0f0;--redb:#cc6666;
+
+  /* dark preview panel — uses brand dark/lime */
+  --w-bg:var(--dark);--w-surface:rgba(255,255,255,.06);--w-border:rgba(174,223,51,.25);
+  --w-green:var(--lime);--w-text:#ffffff;--w-sub:rgba(255,255,255,.5);
+}
+body{background:var(--page-bg);color:var(--text-soft);font-family:var(--sans);font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+
+.topbar{background:var(--dark);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.bname{font-family:var(--serif);font-weight:900;font-size:19px;color:#fff}
+.bname em{font-style:italic;color:var(--lime)}
+.bsep{color:rgba(255,255,255,.25);margin:0 8px}
+.bsub{font-family:var(--mono);font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.5)}
+.nav{display:flex;gap:6px;flex-wrap:wrap}
+.npill{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:5px 13px;border-radius:20px;border:1.5px solid rgba(174,223,51,.35);color:var(--lime);cursor:pointer;user-select:none;transition:all .15s}
+.npill:hover{background:var(--lime);color:var(--dark);border-color:var(--lime)}
+
+.wrap{max-width:1200px;margin:0 auto;padding:32px 28px 72px;display:flex;flex-direction:column;gap:34px}
+.ey{font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;border-left:4px solid var(--lime);padding-left:12px}
+.st{font-family:var(--serif);font-size:24px;font-weight:700;color:var(--text);margin-bottom:5px}
+.sd{font-size:14.5px;color:var(--sub);line-height:1.65;margin-bottom:16px}
+.card{background:var(--card);border:1.5px solid var(--border);border-radius:10px;overflow:hidden}
+.sbar{background:var(--lime-bg);border:1.5px solid #d0e090;border-left:4px solid var(--lime-dark);border-radius:0 8px 8px 0;padding:12px 18px;font-size:13.5px;color:var(--text-soft);line-height:1.65}
+.sbar strong{color:var(--dark)}
+.tag{display:inline-block;font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:20px;border:1.5px solid;margin:2px 2px 0 0}
+.tg{color:var(--dark);background:var(--mint-bg);border-color:var(--lime-dark)}
+.tgo{color:var(--gold);background:var(--goldbg);border-color:var(--goldb)}
+.tb{color:var(--blue);background:var(--bluebg);border-color:var(--blueb)}
+.tp{color:var(--purple);background:var(--purplebg);border-color:var(--purpleb)}
+.tr{color:var(--red);background:var(--redbg);border-color:var(--redb)}
+
+/* HERO STATS */
+.hero-stats{display:flex;gap:12px;flex-wrap:wrap}
+.hstat{background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:14px 20px;text-align:center;flex:1;min-width:140px}
+.hstat-n{font-family:var(--serif);font-size:26px;font-weight:900;color:var(--dark)}
+.hstat-l{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--label);margin-top:3px}
+
+/* PROMPT CARD */
+.prompt-card{background:var(--card);border:1.5px solid var(--border);border-radius:10px;overflow:hidden}
+.prompt-head{padding:11px 18px;background:var(--surface);border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.prompt-label{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--label)}
+.prompt-ta{width:100%;font-family:var(--mono);font-size:13px;line-height:1.75;color:var(--text);background:var(--surface);border:none;padding:16px 18px;resize:vertical;outline:none;min-height:260px}
+.copy-btn{font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:5px 14px;border-radius:20px;border:1.5px solid var(--border);color:var(--label);background:var(--card);cursor:pointer;transition:all .15s}
+.copy-btn:hover,.copy-btn.ok{border-color:var(--lime-dark);color:var(--dark);background:var(--mint-bg)}
+
+/* WORKFLOW */
+.wf-steps{display:flex;flex-direction:column;gap:0}
+.wf-step{display:flex;gap:0;position:relative}
+.wf-step:not(:last-child)::after{content:'';position:absolute;left:29px;top:60px;bottom:-1px;width:2px;background:var(--border);z-index:0}
+.wf-num-wrap{flex-shrink:0;width:58px;display:flex;flex-direction:column;align-items:center;padding-top:14px;position:relative;z-index:1}
+.wf-num{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:15px;font-weight:500;border:2px solid}
+.wf-num.n1{background:var(--bluebg);color:var(--blue);border-color:var(--blueb)}
+.wf-num.n2{background:var(--goldbg);color:var(--gold);border-color:var(--goldb)}
+.wf-num.n3{background:var(--lime-bg);color:#3d5a10;border-color:var(--lime-dark)}
+.wf-num.n4{background:var(--purplebg);color:var(--purple);border-color:var(--purpleb)}
+.wf-num.n5{background:var(--tealbg);color:var(--teal);border-color:var(--tealb)}
+.wf-body{flex:1;padding:14px 14px 26px 10px}
+.wf-title{font-weight:600;color:var(--text);font-size:16px;margin-bottom:4px}
+.wf-time{font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--label);margin-bottom:8px}
+.wf-desc{font-size:14px;color:var(--sub);line-height:1.65}
+.wf-sources{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.wf-tip{margin-top:11px;font-size:13px;color:var(--gold);background:var(--goldbg);border:1px solid var(--goldb);border-radius:6px;padding:10px 13px;line-height:1.6}
+.wf-note{margin-top:11px;font-size:13px;color:var(--teal);background:var(--tealbg);border:1px solid var(--tealb);border-radius:6px;padding:10px 13px;line-height:1.6}
+
+/* LINK HIERARCHY */
+.link-list{display:flex;flex-direction:column;gap:8px}
+.link-row{display:flex;gap:14px;align-items:flex-start;background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:12px 16px}
+.link-n{font-family:var(--serif);font-size:18px;font-weight:900;color:var(--lime-dark);background:var(--dark);width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.link-body{flex:1}
+.link-title{font-weight:600;color:var(--text);font-size:14.5px;margin-bottom:2px}
+.link-desc{font-size:13px;color:var(--sub);line-height:1.55}
+
+/* BUILDER */
+.builder-wrap{display:grid;grid-template-columns:1fr 370px;gap:20px;align-items:flex-start}
+.entry-row{background:var(--card);border:1.5px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px}
+.entry-head{padding:9px 14px;background:var(--surface);border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:8px}
+.entry-n{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--label)}
+.entry-fields{display:grid;grid-template-columns:2fr 1fr 80px 100px;gap:8px;padding:12px 14px 8px}
+.entry-fields-2{display:grid;grid-template-columns:1fr;gap:8px;padding:0 14px 12px}
+.fl{display:flex;flex-direction:column;gap:3px}
+.fl-lbl{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--label)}
+.fi{font-size:13.5px;color:var(--text);background:var(--surface);border:1.5px solid var(--border);border-radius:6px;padding:7px 10px;outline:none;width:100%}
+.fi:focus{border-color:var(--lime-dark)}
+select.fi{cursor:pointer}
+.pct-fi{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--dark);background:var(--surface);border:1.5px solid var(--lime-dark);border-radius:6px;padding:6px 8px;outline:none;width:100%;text-align:center}
+.pct-fi:focus{border-color:var(--dark)}
+.url-fi{font-family:var(--mono);font-size:12.5px}
+
+/* PREVIEW */
+.preview-panel{background:var(--w-bg);border-radius:12px;padding:18px;position:sticky;top:80px}
+.prev-title{font-family:var(--serif);font-size:19px;font-weight:700;color:var(--w-text);margin-bottom:14px}
+.prev-items{display:flex;flex-direction:column;gap:6px}
+.prev-item{background:var(--w-surface);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;border:1px solid var(--w-border)}
+.prev-item:first-child{background:rgba(174,223,51,.12);border-color:rgba(174,223,51,.4)}
+.prev-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.prev-left{flex:1;min-width:0}
+.prev-name{font-family:var(--serif);font-size:14px;font-weight:700;color:var(--w-green);line-height:1.3;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prev-meta{font-family:var(--mono);font-size:10px;color:var(--w-sub)}
+.prev-badge{background:var(--lime);color:var(--dark);font-family:var(--mono);font-size:10px;font-weight:500;padding:3px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.prev-url{font-size:11px;color:var(--w-sub);line-height:1.5;font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prev-empty{color:var(--w-sub);font-size:13px;font-style:italic;text-align:center;padding:24px 0}
+
+/* ACTIONS */
+.act-bar{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap}
+.btn{font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:9px 18px;border-radius:8px;border:1.5px solid;cursor:pointer;transition:all .15s}
+.btn-p{background:var(--dark);color:#fff;border-color:var(--dark)}
+.btn-p:hover{background:var(--text-soft);border-color:var(--text-soft)}
+.btn-s{background:var(--card);color:var(--label);border-color:var(--border)}
+.btn-s:hover{border-color:var(--lime-dark);color:var(--dark);background:var(--mint-bg)}
+
+/* OUTPUT */
+.out-box{display:none;margin-top:12px}
+.out-box.show{display:block}
+.out-head{padding:11px 16px;border-bottom:1.5px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between}
+.out-lbl{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--label)}
+.out-ta{width:100%;font-family:var(--mono);font-size:12px;line-height:1.75;color:var(--text);background:var(--surface);border:none;padding:14px 16px;resize:none;outline:none;min-height:260px}
+
+/* CATEGORIES */
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.cat-card{background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:14px}
+.cat-name{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--text);margin-bottom:5px}
+.cat-desc{font-size:12.5px;color:var(--sub);line-height:1.5}
+
+/* FALLBACK CALCULATOR */
+.calc-layout{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.calc-panel{background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:18px}
+.calc-tabs{display:flex;gap:6px;margin-bottom:14px}
+.ctab{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:6px 13px;border-radius:20px;border:1.5px solid var(--border);color:var(--label);cursor:pointer;transition:all .15s;user-select:none}
+.ctab.on{background:var(--mint-bg);border-color:var(--lime-dark);color:var(--dark)}
+.calc-section{display:none}
+.calc-section.visible{display:block}
+.calc-lbl{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--label);margin-bottom:6px}
+.calc-inp{width:100%;font-family:var(--mono);font-size:20px;font-weight:500;color:var(--text);background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;outline:none;text-align:center;margin-bottom:10px}
+.calc-inp:focus{border-color:var(--lime-dark)}
+.calc-result-panel{background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:180px}
+.calc-big{font-family:var(--mono);font-size:48px;font-weight:500;color:var(--dark);line-height:1;margin-bottom:6px}
+.calc-big.neg{color:var(--red)}
+.calc-big.empty{font-size:30px;color:var(--border)}
+.calc-sub{font-size:13px;color:var(--sub);margin-bottom:10px}
+.calc-badge{display:inline-block;background:var(--lime);color:var(--dark);font-family:var(--mono);font-size:11px;font-weight:500;padding:4px 14px;border-radius:20px}
+.calc-badge.neg{background:var(--redb);color:#fff}
+
+.footer{background:var(--dark);padding:14px 28px;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:10px}
+
+@media(max-width:900px){
+  .builder-wrap,.calc-layout{grid-template-columns:1fr}
+  .preview-panel{position:static}
+  .entry-fields{grid-template-columns:1fr 1fr}
+  .cat-grid{grid-template-columns:1fr 1fr}
+  .hero-stats{flex-direction:column}
+  .nav{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <span class="bname">MyCareer<em>Pal</em></span>
+    <span class="bsep">/</span>
+    <span class="bsub">The Morning Loop</span>
+  </div>
+  <div class="nav">
+    <span class="npill" onclick="document.getElementById('prompt').scrollIntoView({behavior:'smooth'})">Search Prompt</span>
+    <span class="npill" onclick="document.getElementById('workflow').scrollIntoView({behavior:'smooth'})">Workflow</span>
+    <span class="npill" onclick="document.getElementById('pick-prompt-section').scrollIntoView({behavior:'smooth'})">Review Candidates</span>
+    <span class="npill" onclick="document.getElementById('links').scrollIntoView({behavior:'smooth'})">Link Hierarchy</span>
+    <span class="npill" onclick="document.getElementById('tracker-logger').scrollIntoView({behavior:'smooth'})">Log in Tracker</span>
+    <span class="npill" onclick="document.getElementById('categories').scrollIntoView({behavior:'smooth'})">Category Tags</span>
+    <span class="npill" onclick="document.getElementById('builder').scrollIntoView({behavior:'smooth'})">Widget Builder</span>
+    <span class="npill" onclick="document.getElementById('fallback').scrollIntoView({behavior:'smooth'})">Fallback Calculator</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- OVERVIEW -->
+  <section>
+    <div class="ey">Every Morning · First Thing</div>
+    <div class="st">One search. Three News picks. One Trending Now widget.</div>
+    <div class="sd">This replaces the separate Daily News Loop and Trending Now Manager with a single morning routine. One 24-hour search produces a ranked candidate table — each with a real stat, a badge, a category tag, and a suggested internal link. The top candidates become today's 3 News pieces (write &amp; publish first), and the same table feeds the Trending Now widget — including links to the News pieces you just published.</div>
+    <div class="hero-stats">
+      <div class="hstat"><div class="hstat-n">24 hrs</div><div class="hstat-l">Search window — tightened from 24-48</div></div>
+      <div class="hstat"><div class="hstat-n">3</div><div class="hstat-l">News pieces minimum — write as many as bandwidth allows</div></div>
+      <div class="hstat"><div class="hstat-n">6</div><div class="hstat-l">Trending Now entries — linked to real pages</div></div>
+      <div class="hstat"><div class="hstat-n">4</div><div class="hstat-l">Steps — search, review, publish, widget</div></div>
+    </div>
+    <div class="sbar" style="margin-top:14px"><strong>Sequencing matters:</strong> write and publish the 3 News pieces <em>before</em> building Trending Now. Trending Now entries that match today's News picks should link straight to those live URLs — that's the "intentional flow" this is designed around. Entries that don't match a fresh News piece fall back to Signal, an existing CareerIQ article, or a Career Path page (see Link Hierarchy below).</div>
+  </section>
+
+  <!-- SEARCH PROMPT -->
+  <section id="prompt">
+    <div class="ey">Step 1 — The Search &amp; Assign Prompt</div>
+    <div class="st">Paste this into Claude, Perplexity, or Gemini</div>
+    <div class="sd">One prompt covers discovery, statistic extraction, category tagging, badge assignment, link suggestions, and flags which candidates are strong enough to be today's News picks.</div>
+    <div class="prompt-card">
+      <div class="prompt-head">
+        <span class="prompt-label">Morning Loop · Search &amp; Build Prompt</span>
+        <button class="copy-btn" onclick="copyTA('prompt-ta',this)">Copy</button>
+      </div>
+      <textarea id="prompt-ta" class="prompt-ta" readonly>You are running MyCareerPal's Morning Loop - a single daily search that drives both today's News content and the Trending Now widget.
+
+TASK: Search the web for US job-market, AI/automation, layoff, salary, and hiring news published in the last 24 hours.
+
+FILTER to these topic clusters only:
+Tier 1 (priority): AI Displacement + Layoffs, Career Switching & Pivoting, Career Stagnation & Meaning, Salary Intelligence, Company Culture & Decisions
+Tier 2: Resume & ATS, Job Search Strategy, Interview Preparation, Skills & Certifications, Specific Career Paths, LinkedIn & Personal Brand
+
+OVERRIDE - major stories outside Tier 1/2: if you find a story that's clearly one of the day's biggest US job-market stories - major national coverage, a landmark government report, a massive cross-industry layoff wave, a significant policy change - but it falls into a different cluster (e.g. Entry-Level Market Collapse, Remote Work & Arrangements, Career Growth & Promotion), INCLUDE IT ANYWAY. Mark it [MAJOR - outside Tier 1/2] and note its actual cluster in the context column. Don't let the Tier 1/2 filter cause the day's biggest story to be missed - this filter is about revenue-aligned topic selection on a normal day, not a ceiling on newsworthiness.
+
+FOR EACH promising story (aim for 10-12 candidates):
+1. Extract ONE real, reported statistic with its source and date - e.g. BLS, LinkedIn Workforce Insights, Indeed Hiring Lab, Glassdoor, company filings/press releases, McKinsey, WEF.
+2. Assign a badge percentage representing the magnitude of the trend. If the reported statistic is already a percentage, use it directly and mark it [Reported]. If it isn't, derive a reasonable representative percentage and mark it [AI-assigned] - interim heuristic until we move to Google Trends/TikTok Creative Center validation, flag every [AI-assigned] entry clearly.
+3. Assign one category tag: Job Market, AI Impact, AI & Work, Career Moves, Salary & Pay, Skills & Learning, Job Search.
+4. Suggest a link target on mycareerpal.com for this topic, in priority order:
+   (a) "Today's News pick" - if this story is breaking/high-impact enough to be one of today's News articles
+   (b) The Signal - specifically the AI Job Displacement Tracker, Entry-Level Job Market Monitor, or a current Theme/Sector Report, if topically relevant
+   (c) A specific Career Path page, if a named role is central to the story
+   (d) MyCareerPal homepage, as a last resort
+5. Mark [NEWS PICK] if this candidate is strong enough to be one of today's 3 News pieces. [MAJOR - outside Tier 1/2] stories should usually be marked [NEWS PICK] too - newsworthiness, not tier, drives the News bucket.
+
+RANK all candidates by recency, tier, and newsworthiness - a [MAJOR - outside Tier 1/2] story can outrank Tier 1/2 stories if it's genuinely the bigger story.
+
+OUTPUT as a table with columns:
+# | Title (short, under 8 words) | Category Tag | Badge % | Reported or AI-assigned | Source + Date | Suggested Link | News Pick? | One-line context (under 20 words)</textarea>
+    </div>
+    <div class="sbar" style="margin-top:10px"><strong>On the % heuristic:</strong> [AI-assigned] badges are an interim stand-in — a defensible estimate of trend magnitude derived from a real reported data point, not yet validated against Google Trends/TikTok CC velocity. Worth revisiting once there's a faster way to cross-check all 6 against actual search-trend data.</div>
+  </section>
+
+  <!-- PICK MY 3 INTERACTIVE -->
+  <section id="pick-prompt-section">
+    <div class="ey">Step 2 — Review Candidates</div>
+    <div class="st">Paste the candidate table — review all stories, get prompts for the ones you want</div>
+    <div class="sd">Paste the full candidate table from Step 1 into the lower box and click "Review Candidates". Claude ranks all of them in a slate table and assigns depth. Click "Get Prompt" on any row you want to write — the writing prompt appears inline, pre-filled with the title and cluster, ready to copy into Claude.</div>
+
+    <div class="prompt-card" style="margin-bottom:12px">
+      <div class="prompt-head">
+        <span class="prompt-label">Review Candidates — System Prompt (editable)</span>
+        <button class="copy-btn" onclick="copyTA('pick-system-prompt',this)">Copy</button>
+      </div>
+      <textarea id="pick-system-prompt" class="prompt-ta" style="min-height:220px">You are helping run MyCareerPal's Morning Loop. Below is today's candidate table from a 24-hour job-market news search. Review ALL candidates and return them ranked as today's News slate — I will decide how many to write.
+
+RANKING LOGIC — apply in order:
+1. Any [MAJOR - outside Tier 1/2] story ranks at the top automatically.
+2. Among [NEWS PICK] flagged candidates, prioritise Tier 1 clusters (AI Displacement + Layoffs, Career Switching & Pivoting, Career Stagnation & Meaning, Salary Intelligence, Company Culture & Decisions) over Tier 2.
+3. Aim for variety across Category Tags — avoid clustering same-category stories together.
+4. Default revenue focus: Shift + Newsletter Growth (bias toward Tier 1 topics with high coaching-audience relevance).
+
+DEPTH ASSIGNMENT per candidate:
+- Full Reaction (700–900w): Tier 1 cluster + [NEWS PICK] flagged + genuinely major data or policy story
+- Quick Take (300–450w): everything else
+
+OUTPUT — return ONLY valid JSON, no markdown fences, no preamble:
+{
+  "candidates": [
+    {
+      "rank": 1,
+      "num": "3",
+      "title": "Short working title from the table",
+      "cluster": "AI Displacement + Layoffs",
+      "tier": "T1",
+      "segment": "Mid-Career",
+      "category": "AI Impact",
+      "depth": "Full Reaction",
+      "stat": "The real stat from the table",
+      "why": "One sentence — why this rank and whether it's worth writing today",
+      "news_pick": true
+    }
+  ]
+}</textarea>
+    </div>
+
+    <div class="prompt-card" style="margin-bottom:12px">
+      <div class="prompt-head">
+        <span class="prompt-label">Paste candidate table from Step 1</span>
+      </div>
+      <textarea id="pick-input" class="prompt-ta" style="min-height:160px" placeholder="Paste the full candidate table here — including the header row — then click Review Candidates below."></textarea>
+    </div>
+
+    <div class="act-bar" style="margin-bottom:16px">
+      <button class="btn btn-p" id="pick-btn" onclick="runPickMy3()">Review Candidates</button>
+      <button class="btn btn-s" onclick="clearPick()">Clear</button>
+    </div>
+
+    <div id="pick-output" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text-muted);border-left:4px solid var(--lime);padding-left:12px">Today's News Slate — write as many as you want</div>
+        <span id="pick-status" style="font-family:var(--mono);font-size:10px;color:var(--label);letter-spacing:1px;text-transform:uppercase"></span>
+      </div>
+
+      <div style="background:var(--card);border:1.5px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px">
+        <table style="width:100%;border-collapse:collapse;font-size:13.5px">
+          <thead>
+            <tr style="background:var(--dark)">
+              <th style="font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);padding:10px 14px;text-align:left;width:30px">Rank</th>
+              <th style="font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);padding:10px 14px;text-align:left">Title</th>
+              <th style="font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);padding:10px 14px;text-align:left">Tier · Cluster</th>
+              <th style="font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);padding:10px 14px;text-align:left">Segment</th>
+              <th style="font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);padding:10px 14px;text-align:left">Depth</th>
+              <th style="font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);padding:10px 14px;text-align:left">Why</th>
+              <th style="font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);padding:10px 10px;text-align:center;width:120px"></th>
+            </tr>
+          </thead>
+          <tbody id="picks-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="sbar"><strong>Done?</strong> Log each piece you're writing in the Content Tracker (Status: Planned, Target Publish: today) before opening the Custom / Ad-hoc Generator in Step 3.</div>
+    </div>
+  </section>
+
+  <!-- WORKFLOW -->
+  <section id="workflow">
+    <div class="ey">The 4-Step Workflow</div>
+    <div class="st">Search → review → publish → link</div>
+    <div class="sd">Discovery, human review, today's content, and the Trending Now refresh all come from one session. Step 2 is the human checkpoint — you confirm the picks before anything gets written.</div>
+
+    <div class="wf-steps">
+      <div class="wf-step">
+        <div class="wf-num-wrap"><div class="wf-num n1">1</div></div>
+        <div class="wf-body">
+          <div class="wf-title">Run the Search &amp; Assign prompt</div>
+          <div class="wf-time">~5 minutes</div>
+          <div class="wf-desc">Paste the prompt above into Claude, Perplexity, or Gemini. You'll get back 10-12 ranked candidates, each with a category tag, a real stat + badge, a suggested link, and a [NEWS PICK] flag on the strongest ones.</div>
+          <div class="wf-sources">
+            <span class="tag tb">Claude</span>
+            <span class="tag tb">Perplexity</span>
+            <span class="tag tb">Gemini</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="wf-step" id="pick-prompt">
+        <div class="wf-num-wrap"><div class="wf-num n2">2</div></div>
+        <div class="wf-body">
+          <div class="wf-title">Review candidates — get prompts for what you want to write</div>
+          <div class="wf-time">~2 minutes</div>
+          <div class="wf-desc">Paste the candidate table into the Review Candidates panel above. Claude ranks all candidates in slate format with depth assignments. Click "Get Prompt" on any row — the T1 writing prompt appears pre-filled with the title and cluster, ready to copy into Claude. Write as many as your bandwidth allows today.</div>
+          <div class="wf-sources">
+            <span class="tag tb">Review Candidates panel above</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="wf-step">
+        <div class="wf-num-wrap"><div class="wf-num n3">3</div></div>
+        <div class="wf-body">
+          <div class="wf-title">Write &amp; publish</div>
+          <div class="wf-time">~30–40 minutes per piece</div>
+          <div class="wf-desc">For each story you're writing: copy the Research prompt → paste into Perplexity → get notes. Then copy the Write Prompt → paste into Claude with the notes at the bottom → article written. Publish via WordPress.</div>
+          <div class="wf-sources">
+            <span class="tag tg">Research + Write Prompt buttons above</span>
+          </div>
+          <div class="wf-tip">If a piece doesn't go live today, its Trending Now slot falls back to the next link in the hierarchy — nothing breaks.</div>
+        </div>
+      </div>
+
+      <div class="wf-step">
+        <div class="wf-num-wrap"><div class="wf-num n4">4</div></div>
+        <div class="wf-body">
+          <div class="wf-title">Build the Trending Now widget</div>
+          <div class="wf-time">~5 minutes</div>
+          <div class="wf-desc">Scroll to the Widget Builder. Paste the table from Step 1 and click Auto-fill — Topic title, Category, Badge %, and Date fill in for all 6 entries. For each entry's URL: if it's one of today's published articles, paste the live URL; otherwise use the Suggested Link column per the Link Hierarchy below. Then Generate Output.</div>
+          <div class="wf-sources">
+            <span class="tag tg">Widget Builder below</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="wf-step">
+        <div class="wf-num-wrap"><div class="wf-num n5">5</div></div>
+        <div class="wf-body">
+          <div class="wf-title">Log in Content Tracker</div>
+          <div class="wf-time">~1 minute per piece</div>
+          <div class="wf-desc">Once each piece is live, fill in the fields below and click "Log in Tracker" — the row is written directly to your Content Tracker Google Sheet. No copy-paste, no xlsx to open.</div>
+          <div class="wf-sources">
+            <span class="tag tg">Tracker Logger below</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LINK HIERARCHY -->
+  <section id="links">
+    <div class="ey">Where Each Entry Links To</div>
+    <div class="st">Link Hierarchy</div>
+    <div class="sd">For every Trending Now entry, pick the first option below that genuinely fits — don't force a weak match higher up the list.</div>
+    <div class="link-list">
+      <div class="link-row">
+        <div class="link-n">1</div>
+        <div class="link-body">
+          <div class="link-title">A News or CareerIQ article already on the site</div>
+          <div class="link-desc">Including the 3 pieces you just published this morning. Most direct — "we already covered this." As daily output accumulates, this becomes the default for most entries within a few weeks.</div>
+        </div>
+      </div>
+      <div class="link-row">
+        <div class="link-n">2</div>
+        <div class="link-body">
+          <div class="link-title">The Signal — report or live dashboard</div>
+          <div class="link-desc">AI Job Displacement Tracker, Entry-Level Job Market Monitor, or a current Theme/Sector Report. Evergreen and always live — the strongest fallback today, and your highest-value CTA regardless.</div>
+        </div>
+      </div>
+      <div class="link-row">
+        <div class="link-n">3</div>
+        <div class="link-body">
+          <div class="link-title">A specific Career Path page</div>
+          <div class="link-desc">When a named role is central to the story. Strongest long-term option given 833 pages, but only a couple are populated today — use when one of those happens to match.</div>
+        </div>
+      </div>
+      <div class="link-row">
+        <div class="link-n">4</div>
+        <div class="link-body">
+          <div class="link-title">MyCareerPal homepage</div>
+          <div class="link-desc">Last resort — only if nothing above genuinely fits.</div>
+        </div>
+      </div>
+    </div>
+    <div class="sbar" style="margin-top:12px"><strong>Before the widget goes live on-site:</strong> since nothing's published to it yet, it's worth seeding a few more Signal pieces and News/CareerIQ articles first so early Trending Now widgets aren't entirely Signal-fallback links.</div>
+  </section>
+
+  <!-- TRACKER LOGGER -->
+  <section id="tracker-logger">
+    <div class="ey">Step 5 — Content Tracker Logger</div>
+    <div class="st">Log each published piece in 60 seconds</div>
+    <div class="sd">Fill in the fields below for each article you published today. Click Generate Row to get a tab-separated row ready to paste straight into the Content Tracker spreadsheet — open the xlsx, click the first empty cell in column A of the next row, and paste.</div>
+
+    <div class="card" style="padding:20px;margin-bottom:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="fl">
+          <div class="fl-lbl">Article Title</div>
+          <input class="fi" id="tl-title" placeholder="e.g. AI Layoffs Hit 50,000 in Q2 — What the Data Shows">
+        </div>
+        <div class="fl">
+          <div class="fl-lbl">Live URL</div>
+          <input class="fi" id="tl-url" placeholder="https://mycareerpal.com/news/...">
+        </div>
+        <div class="fl">
+          <div class="fl-lbl">Topic Cluster</div>
+          <select class="fi" id="tl-cluster">
+            <option>AI Displacement + Layoffs</option>
+            <option>Career Switching &amp; Pivoting</option>
+            <option>Career Stagnation &amp; Meaning</option>
+            <option>Salary Intelligence</option>
+            <option>Company Culture &amp; Decisions</option>
+            <option>Resume &amp; ATS</option>
+            <option>Job Search Strategy</option>
+            <option>Interview Preparation</option>
+            <option>Skills &amp; Certifications</option>
+            <option>Specific Career Paths</option>
+            <option>LinkedIn &amp; Personal Brand</option>
+            <option>Entry-Level Market Collapse</option>
+            <option>Remote Work &amp; Arrangements</option>
+          </select>
+        </div>
+        <div class="fl">
+          <div class="fl-lbl">WP Category</div>
+          <select class="fi" id="tl-cat">
+            <option>Job Market</option>
+            <option>AI Impact</option>
+            <option>AI &amp; Work</option>
+            <option>Career Moves</option>
+            <option>Salary &amp; Pay</option>
+            <option>Skills &amp; Learning</option>
+            <option>Job Search</option>
+          </select>
+        </div>
+        <div class="fl">
+          <div class="fl-lbl">Tier</div>
+          <select class="fi" id="tl-tier">
+            <option value="1">Tier 1</option>
+            <option value="2">Tier 2</option>
+            <option value="3">Tier 3</option>
+          </select>
+        </div>
+        <div class="fl">
+          <div class="fl-lbl">Depth</div>
+          <select class="fi" id="tl-depth">
+            <option>Quick Take</option>
+            <option>Full Reaction</option>
+          </select>
+        </div>
+        <div class="fl">
+          <div class="fl-lbl">Career Level</div>
+          <select class="fi" id="tl-seg">
+            <option value="">All Levels</option>
+            <option>New Grad</option>
+            <option>Early-Mid Career</option>
+            <option>Mid-Career</option>
+            <option>Late Career</option>
+          </select>
+        </div>
+        <div class="fl">
+          <div class="fl-lbl">CTA Used</div>
+          <select class="fi" id="tl-cta">
+            <option>AI Job Risk Calculator</option>
+            <option>The Signal</option>
+            <option>CareerIQ Brief</option>
+            <option>Salary Benchmark Tool</option>
+            <option>Career Switch Readiness Score</option>
+            <option>The Shift coaching</option>
+            <option>App tools</option>
+            <option>Path Intelligence (waitlist)</option>
+          </select>
+        </div>
+      </div>
+      <div class="act-bar">
+        <button class="btn btn-p" onclick="generateTrackerRow()">Log in Tracker</button>
+        <button class="btn btn-s" onclick="clearTrackerForm()">Clear</button>
+      </div>
+    </div>
+
+    <div id="tracker-out" style="display:none">
+      <div class="card">
+        <div class="out-head">
+          <span class="out-lbl">Logged to Google Sheet</span>
+        </div>
+        <div id="tracker-row-display" style="padding:14px 16px;font-family:var(--mono);font-size:12px;line-height:1.8;color:var(--text);overflow-x:auto;white-space:pre"></div>
+      </div>
+      <div class="sbar" style="margin-top:10px"><strong>Done:</strong> row written directly to the Content Tracker Google Sheet. Open it to verify if needed.</div>
+    </div>
+  </section>
+
+  <!-- CATEGORIES -->
+  <section id="categories">
+    <div class="ey">Category Tags · Pick one per entry</div>
+    <div class="st">The 7 category tags</div>
+    <div class="sd">Every widget entry needs one category tag. Aim for variety across the 7 tags each week — the Search &amp; Assign prompt already tries to do this, but double-check before building.</div>
+
+    <div class="cat-grid" style="margin-bottom:14px">
+      <div class="cat-card" style="border-color:var(--blueb)"><div class="cat-name" style="color:var(--blue)">Job Market</div><div class="cat-desc">Layoffs, hiring data, employment trends, job posting volumes, entry-level market, workforce intelligence</div></div>
+      <div class="cat-card" style="border-color:var(--purpleb)"><div class="cat-name" style="color:var(--purple)">AI Impact</div><div class="cat-desc">AI displacement, job risk, automation by sector, AI-driven workforce changes</div></div>
+      <div class="cat-card" style="border-color:var(--purpleb)"><div class="cat-name" style="color:var(--purple)">AI &amp; Work</div><div class="cat-desc">AI tools, workplace AI adoption, AI skills demand, HR technology</div></div>
+      <div class="cat-card" style="border-color:var(--lime-dark)"><div class="cat-name" style="color:var(--dark)">Career Moves</div><div class="cat-desc">Switching, pivoting, culture decisions, stagnation, mid-career, burnout, freelancing, remote work decisions</div></div>
+      <div class="cat-card" style="border-color:var(--tealb)"><div class="cat-name" style="color:var(--teal)">Salary &amp; Pay</div><div class="cat-desc">Salary data, pay transparency, AI salary premium, compensation, career growth and promotion</div></div>
+      <div class="cat-card" style="border-color:var(--redb)"><div class="cat-name" style="color:var(--red)">Skills &amp; Learning</div><div class="cat-desc">Skills in demand, certifications, upskilling, AI skills, learning pathways</div></div>
+      <div class="cat-card" style="border-color:var(--goldb)"><div class="cat-name" style="color:var(--gold)">Job Search</div><div class="cat-desc">Resume, ATS, interview prep, job search strategy, LinkedIn, networking, hidden job market</div></div>
+    </div>
+  </section>
+
+  <!-- WIDGET BUILDER -->
+  <section id="builder">
+    <div class="ey">Step 3 — Widget Builder · 6 entries · Live preview</div>
+    <div class="st">Build this week's widget</div>
+    <div class="sd">Paste the table from Step 1 below and click Auto-fill — Title, Category, Badge %, and Date fill in for all 6 entries. Add the URL for each entry manually (live News URLs for today's picks, Signal/CareerIQ/Career Path per the Link Hierarchy for the rest). Edit anything that needs adjusting. The preview on the right updates live. When done, Generate Output for WordPress or developer handoff.</div>
+
+    <div class="prompt-card" style="margin-bottom:16px">
+      <div class="prompt-head">
+        <span class="prompt-label">Paste Search &amp; Assign output here</span>
+        <button class="copy-btn" onclick="parseAndFill()">Auto-fill Widget</button>
+      </div>
+      <textarea id="paste-ta" class="prompt-ta" style="min-height:140px" placeholder="Paste the table the AI returned — including the header row — here, then click Auto-fill Widget."></textarea>
+    </div>
+
+    <div class="builder-wrap">
+      <div>
+        <div id="builder-form"></div>
+        <div class="act-bar">
+          <button class="btn btn-p" onclick="generateOutput()">Generate Output</button>
+          <button class="btn btn-s" onclick="clearAll()">Clear All</button>
+        </div>
+        <div class="out-box card" id="out-box">
+          <div class="out-head">
+            <span class="out-lbl">WordPress / Developer Output</span>
+            <button class="btn btn-s" style="padding:5px 12px;font-size:10px;" onclick="copyOut(this)">Copy All</button>
+          </div>
+          <textarea class="out-ta" id="out-ta" readonly></textarea>
+        </div>
+      </div>
+
+      <div class="preview-panel">
+        <div class="prev-title">Trending Now</div>
+        <div class="prev-items" id="prev-items">
+          <div class="prev-empty">Fill in entries to see preview</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FALLBACK CALCULATOR -->
+  <section id="fallback">
+    <div class="ey">Optional Fallback</div>
+    <div class="st">Google Trends / TikTok CC cross-check</div>
+    <div class="sd">If the Search &amp; Assign prompt can't surface a usable statistic for a category you need, fall back to a manual Google Trends or TikTok Creative Center check for that one topic. This calculator converts two Google Trends scores into a percentage, or lets you enter a TikTok CC percentage directly.</div>
+
+    <div class="calc-layout">
+      <div class="calc-panel">
+        <div class="calc-tabs">
+          <span class="ctab on" onclick="switchTab('gt',this)">Google Trends</span>
+          <span class="ctab" onclick="switchTab('direct',this)">Direct % (TikTok CC)</span>
+        </div>
+
+        <div class="calc-section visible" id="tab-gt">
+          <div class="calc-lbl">Previous score (7 days ago)</div>
+          <input class="calc-inp" id="gt-prev" type="number" min="0" max="100" placeholder="42" oninput="calcGT()">
+          <div class="calc-lbl">Current score (today)</div>
+          <input class="calc-inp" id="gt-curr" type="number" min="0" max="100" placeholder="78" oninput="calcGT()">
+          <div style="font-size:12.5px;color:var(--sub);line-height:1.6;margin-top:4px;">trends.google.com → set country to United States, time to Past 7 days. Hover over the rightmost point for "current", and the same point 7 days back for "previous".</div>
+        </div>
+
+        <div class="calc-section" id="tab-direct">
+          <div class="calc-lbl">Paste % from TikTok Creative Center</div>
+          <input class="calc-inp" id="direct-pct" type="number" min="0" placeholder="234" oninput="calcDirect()" style="color:var(--dark);border-color:var(--lime-dark)">
+          <div style="font-size:12.5px;color:var(--sub);line-height:1.6;margin-top:4px;">ads.tiktok.com/business/creativecenter → Trends → Hashtag → set Country = United States, Period = 7 Days. TikTok already calculates the growth % — enter it here just to preview the badge.</div>
+        </div>
+      </div>
+
+      <div class="calc-result-panel">
+        <div class="calc-big empty" id="calc-display">—</div>
+        <div class="calc-sub" id="calc-sub">Enter scores to calculate</div>
+        <div id="calc-badge-wrap"></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+var cats = ['Job Market','AI Impact','AI & Work','Career Moves','Salary & Pay','Skills & Learning','Job Search'];
+
+// ── TABS (fallback calculator) ──────────────────────────────────────────
+function switchTab(id, el) {
+  document.querySelectorAll('.ctab').forEach(function(t){ t.className='ctab'; });
+  el.className = 'ctab on';
+  document.querySelectorAll('.calc-section').forEach(function(s){ s.className='calc-section'; });
+  document.getElementById('tab-'+id).className = 'calc-section visible';
+  resetCalc();
+}
+
+function resetCalc() {
+  document.getElementById('calc-display').textContent = '—';
+  document.getElementById('calc-display').className = 'calc-big empty';
+  document.getElementById('calc-sub').textContent = 'Enter scores to calculate';
+  document.getElementById('calc-badge-wrap').innerHTML = '';
+}
+
+function showResult(pct) {
+  var sign = pct >= 0 ? '+' : '';
+  var el = document.getElementById('calc-display');
+  el.textContent = sign + pct + '%';
+  el.className = pct >= 0 ? 'calc-big' : 'calc-big neg';
+  document.getElementById('calc-sub').textContent = pct >= 0 ? 'search interest increase this week' : 'search interest decrease this week';
+  var badge = pct >= 0
+    ? '<div class="calc-badge">+' + pct + '% this week</div>'
+    : '<div class="calc-badge neg">' + pct + '% this week</div>';
+  document.getElementById('calc-badge-wrap').innerHTML = badge;
+}
+
+function calcGT() {
+  var prev = parseFloat(document.getElementById('gt-prev').value);
+  var curr = parseFloat(document.getElementById('gt-curr').value);
+  if (isNaN(prev) || isNaN(curr) || prev === 0) { resetCalc(); return; }
+  showResult(Math.round(((curr - prev) / prev) * 100));
+}
+
+function calcDirect() {
+  var v = parseFloat(document.getElementById('direct-pct').value);
+  if (isNaN(v)) { resetCalc(); return; }
+  showResult(Math.round(v));
+}
+
+// ── PROMPT COPY ───────────────────────────────────────────────────────────
+function copyTA(id, btn) {
+  var ta = document.getElementById(id);
+  ta.select();
+  try { document.execCommand('copy'); } catch(e) { try { navigator.clipboard.writeText(ta.value); } catch(e2) {} }
+  btn.textContent = '✓ Copied';
+  btn.className = 'copy-btn ok';
+  setTimeout(function(){ btn.textContent = 'Copy'; btn.className = 'copy-btn'; }, 2000);
+}
+
+// ── WIDGET BUILDER ────────────────────────────────────────────────────────
+function getTodayStr() {
+  var d = new Date();
+  return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()] + ' ' + d.getDate() + ' ' + d.getFullYear();
+}
+
+function buildForm() {
+  var f = document.getElementById('builder-form');
+  f.innerHTML = '';
+  for (var i = 1; i <= 6; i++) {
+    f.innerHTML +=
+      '<div class="entry-row">' +
+        '<div class="entry-head"><span class="entry-n">Entry ' + i + '</span></div>' +
+        '<div class="entry-fields">' +
+          '<div class="fl"><div class="fl-lbl">Topic title</div><input class="fi" id="t'+i+'" placeholder="e.g. Entry-Level Postings Fall Again" oninput="updatePreview()"></div>' +
+          '<div class="fl"><div class="fl-lbl">Category</div><select class="fi" id="c'+i+'" onchange="updatePreview()">' + cats.map(function(c){return '<option>'+c+'</option>';}).join('') + '</select></div>' +
+          '<div class="fl"><div class="fl-lbl">Badge %</div><input class="pct-fi" id="p'+i+'" type="number" min="0" placeholder="29" oninput="updatePreview()"></div>' +
+          '<div class="fl"><div class="fl-lbl">Date</div><input class="fi" id="d'+i+'" placeholder="'+getTodayStr()+'" oninput="updatePreview()"></div>' +
+        '</div>' +
+        '<div class="entry-fields-2">' +
+          '<div class="fl"><div class="fl-lbl">URL — where this entry links to</div><input class="fi url-fi" id="u'+i+'" placeholder="e.g. mycareerpal.com/news/entry-level-postings-fall-again or mycareerpal.com/signal/entry-level-monitor" oninput="updatePreview()"></div>' +
+        '</div>' +
+      '</div>';
+  }
+}
+
+function updatePreview() {
+  var items = [];
+  for (var i = 1; i <= 6; i++) {
+    var t = document.getElementById('t'+i), p = document.getElementById('p'+i),
+        c = document.getElementById('c'+i), d = document.getElementById('d'+i),
+        u = document.getElementById('u'+i);
+    if (t && t.value.trim()) {
+      items.push({ title: t.value, cat: c.value, date: d.value || getTodayStr(), pct: p.value, url: u.value });
+    }
+  }
+  var prev = document.getElementById('prev-items');
+  if (!items.length) { prev.innerHTML = '<div class="prev-empty">Fill in entries to see preview</div>'; return; }
+  prev.innerHTML = items.map(function(item) {
+    return '<div class="prev-item">' +
+      '<div class="prev-top"><div class="prev-left"><div class="prev-name">'+item.title+'</div><div class="prev-meta">'+item.cat+' · '+item.date+'</div></div>' +
+      (item.pct ? '<div class="prev-badge">+'+item.pct+'%</div>' : '') + '</div>' +
+      (item.url ? '<div class="prev-url">→ '+item.url+'</div>' : '') +
+    '</div>';
+  }).join('');
+}
+
+// ── AUTO-FILL FROM PASTED TABLE ─────────────────────────────────────────
+function parseAndFill() {
+  var raw = document.getElementById('paste-ta').value;
+  var lines = raw.split('\n').map(function(l){ return l.trim(); }).filter(function(l){ return l.length; });
+
+  var rows = [];
+  for (var li = 0; li < lines.length; li++) {
+    var line = lines[li];
+    if (line.indexOf('|') === -1) continue;
+    var cells = line.split('|').map(function(c){ return c.trim(); });
+    if (cells[0] === '') cells.shift();
+    if (cells.length && cells[cells.length-1] === '') cells.pop();
+    if (!cells.length) continue;
+    // skip markdown separator rows like ---|---|:--:
+    if (cells.every(function(c){ return /^:?-+:?$/.test(c); })) continue;
+    rows.push(cells);
+  }
+
+  if (!rows.length) { alert('No table rows found. Paste the table the AI returned, including the header row.'); return; }
+
+  // try to detect a header row and map column names to indices
+  var header = rows[0].map(function(c){ return c.toLowerCase(); });
+  var col = { title: -1, category: -1, badge: -1, source: -1 };
+  header.forEach(function(h, idx){
+    if (col.title === -1 && h.indexOf('title') > -1) col.title = idx;
+    else if (col.category === -1 && h.indexOf('categor') > -1) col.category = idx;
+    else if (col.badge === -1 && (h.indexOf('badge') > -1 || h.indexOf('%') > -1)) col.badge = idx;
+    else if (col.source === -1 && (h.indexOf('source') > -1 || h.indexOf('date') > -1)) col.source = idx;
+  });
+
+  var dataRows;
+  if (col.title > -1) {
+    dataRows = rows.slice(1);
+  } else {
+    // no recognizable header — guess positionally
+    dataRows = rows;
+    if (/^\d+$/.test(rows[0][0] || '')) {
+      col = { title: 1, category: 2, badge: 3, source: 5 };
+    } else {
+      col = { title: 0, category: 1, badge: 2, source: 4 };
+    }
+  }
+
+  var n = Math.min(dataRows.length, 6);
+  var dateRe = /[A-Za-z]{3,9}\.?\s+\d{1,2},?\s+\d{4}|[A-Za-z]{3,9}\.?\s+\d{4}|\d{1,2}\/\d{1,2}\/\d{2,4}|\b\d{4}\b/;
+
+  for (var i = 0; i < n; i++) {
+    var r = dataRows[i], idx = i + 1;
+
+    if (col.title > -1 && r[col.title] !== undefined) {
+      document.getElementById('t'+idx).value = r[col.title];
+    }
+    if (col.category > -1 && r[col.category] !== undefined) {
+      var catVal = r[col.category].toLowerCase();
+      var catIdx = cats.findIndex(function(c){ return c.toLowerCase() === catVal; });
+      document.getElementById('c'+idx).selectedIndex = catIdx > -1 ? catIdx : 0;
+    }
+    if (col.badge > -1 && r[col.badge] !== undefined) {
+      var b = r[col.badge].replace(/[^0-9.\-]/g, '');
+      document.getElementById('p'+idx).value = b;
+    }
+    if (col.source > -1 && r[col.source] !== undefined) {
+      var m = r[col.source].match(dateRe);
+      document.getElementById('d'+idx).value = m ? m[0] : r[col.source];
+    }
+  }
+
+  updatePreview();
+}
+
+function generateOutput() {
+  var lines = ['TRENDING NOW WIDGET UPDATE\n', 'Week of: ' + getTodayStr() + '\n'];
+  var any = false;
+  for (var i = 1; i <= 6; i++) {
+    var t = document.getElementById('t'+i).value;
+    if (!t.trim()) continue;
+    any = true;
+    lines.push('Entry ' + i + ':');
+    lines.push('  Title:        ' + t);
+    lines.push('  Category:     ' + document.getElementById('c'+i).value);
+    lines.push('  Badge:        +' + (document.getElementById('p'+i).value || '0') + '% this week');
+    lines.push('  Date:         ' + (document.getElementById('d'+i).value || getTodayStr()));
+    lines.push('  URL:          ' + (document.getElementById('u'+i).value || '—'));
+    lines.push('');
+  }
+  if (!any) { alert('Fill in at least one entry first.'); return; }
+  var box = document.getElementById('out-box');
+  box.className = 'out-box card show';
+  document.getElementById('out-ta').value = lines.join('\n');
+  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function copyOut(btn) {
+  var ta = document.getElementById('out-ta');
+  ta.select();
+  try { document.execCommand('copy'); } catch(e) { try { navigator.clipboard.writeText(ta.value); } catch(e2) {} }
+  btn.textContent = '✓ Copied';
+  setTimeout(function(){ btn.textContent = 'Copy All'; }, 2000);
+}
+
+function clearAll() {
+  for (var i = 1; i <= 6; i++) {
+    document.getElementById('t'+i).value = '';
+    document.getElementById('d'+i).value = '';
+    document.getElementById('p'+i).value = '';
+    document.getElementById('u'+i).value = '';
+    document.getElementById('c'+i).selectedIndex = 0;
+  }
+  document.getElementById('paste-ta').value = '';
+  document.getElementById('gt-prev').value = '';
+  document.getElementById('gt-curr').value = '';
+  if (document.getElementById('direct-pct')) document.getElementById('direct-pct').value = '';
+  document.getElementById('out-box').className = 'out-box card';
+  resetCalc();
+  updatePreview();
+}
+
+// ── TRACKER LOGGER ───────────────────────────────────────────────────────
+var _nextId = 6; // start after existing 5 rows — user can adjust
+
+async function generateTrackerRow() {
+  var title = document.getElementById('tl-title').value.trim();
+  var url   = document.getElementById('tl-url').value.trim();
+  if (!title) { alert('Add the article title first.'); return; }
+
+  var today = new Date();
+  var dateStr = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+  var cluster = document.getElementById('tl-cluster').value;
+  var cat     = document.getElementById('tl-cat').value;
+  var tier    = document.getElementById('tl-tier').value;
+  var depth   = document.getElementById('tl-depth').value;
+  var seg     = document.getElementById('tl-seg').value;
+  var cta     = document.getElementById('tl-cta').value;
+
+  var cols = [
+    _nextId,'News',title,'T1','News & Reaction',
+    cluster,tier,cat,'Published',dateStr,dateStr,url,
+    '','',seg,depth,cta,'Yes','Yes',''
+  ];
+
+  var logBtn = document.querySelector('[onclick="generateTrackerRow()"]');
+  logBtn.textContent = 'Logging…';
+  logBtn.disabled = true;
+
+  try {
+    // Use GET with params — avoids CORS preflight entirely
+    var params = APPS_SCRIPT_URL + '?action=write&row=' + encodeURIComponent(JSON.stringify(cols));
+    var res = await fetch(params);
+    var result = await res.json();
+    if (result.success) {
+      _nextId++;
+      document.getElementById('tracker-out').style.display = 'block';
+      document.getElementById('tracker-row-display').textContent = '✓ Row logged to Content Tracker Google Sheet\n\n' +
+        ['ID','Post Type','Title','Type Code','Type Name','Topic Cluster','Tier','Category','Status','Target Publish','Actual Publish','Live URL','Subtopic Tags','Industry Tag','Career Level','Format Tag','CTA Used','Perplexity Done','Claude Done','Notes']
+        .map(function(l,i){ return l.padEnd(18)+': '+cols[i]; }).join('\n');
+      document.getElementById('tracker-out').scrollIntoView({behavior:'smooth',block:'nearest'});
+    } else {
+      alert('Sheet write failed — check your Apps Script deployment.');
+    }
+  } catch(err) {
+    alert('Error writing to Sheet: ' + err.message);
+  }
+
+  logBtn.textContent = 'Log in Tracker';
+  logBtn.disabled = false;
+}
+
+function copyTrackerRow(btn) {
+  var display = document.getElementById('tracker-row-display');
+  var raw = display.dataset.raw || '';
+  try { navigator.clipboard.writeText(raw); } catch(e) {
+    var ta = document.createElement('textarea');
+    ta.value = raw; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(e2){}
+    document.body.removeChild(ta);
+  }
+  btn.textContent = '✓ Copied';
+  setTimeout(function(){ btn.textContent = 'Copy Row'; }, 2000);
+}
+
+function clearTrackerForm() {
+  document.getElementById('tl-title').value = '';
+  document.getElementById('tl-url').value = '';
+  document.getElementById('tl-cluster').selectedIndex = 0;
+  document.getElementById('tl-cat').selectedIndex = 0;
+  document.getElementById('tl-tier').selectedIndex = 0;
+  document.getElementById('tl-depth').selectedIndex = 0;
+  document.getElementById('tl-seg').selectedIndex = 0;
+  document.getElementById('tl-cta').selectedIndex = 0;
+  document.getElementById('tracker-out').style.display = 'none';
+}
+
+buildForm();
+
+// ── REVIEW CANDIDATES — Claude API ────────────────────────────────────────
+var TIER_COLORS = {
+  'T1': {bg:'var(--purplebg)',color:'var(--purple)',border:'var(--purpleb)'},
+  'T2': {bg:'var(--mint-bg)',color:'var(--dark)',border:'var(--lime-dark)'},
+  'T3': {bg:'var(--goldbg)',color:'var(--gold)',border:'var(--goldb)'},
+  'T4': {bg:'var(--tealbg)',color:'var(--teal)',border:'var(--tealb)'}
+};
+var SEG_COLORS = {
+  'New Grad':    {bg:'#fdeae5',color:'#c0553a',border:'#e0735c'},
+  'Early-Mid':   {bg:'var(--tealbg)',color:'var(--teal)',border:'var(--tealb)'},
+  'Mid-Career':  {bg:'var(--purplebg)',color:'var(--purple)',border:'var(--purpleb)'},
+  'Late Career': {bg:'var(--bluebg)',color:'var(--blue)',border:'var(--blueb)'}
+};
+
+var QT_PROMPT = 'Using the research notes below, write a 300–450 word Quick Take news article for MyCareerPal.\n\nARTICLE TITLE: [TITLE]\nTOPIC CLUSTER: [CLUSTER]\n\nSTRUCTURE:\nOpening (AEO): 2 sentences — what happened and why it matters to a US professional.\nWhat Happened — 1 short paragraph, facts with data points\nWhat This Means for Your Career — 2–3 direct sentences\nCTA: One relevant tool link\n\nVOICE: Tight, fast, no filler. No FAQ — this is a quick read. Every claim sourced.\n\n[PASTE PERPLEXITY RESEARCH NOTES HERE]';
+var FR_PROMPT = 'Using the research notes below, write a 700–900 word news article for MyCareerPal.\n\nARTICLE TITLE: [TITLE]\nTOPIC CLUSTER: [CLUSTER]\n\nSTRUCTURE:\nOpening (AEO): 2 sentences — what happened and why it matters to a US professional.\nH2: What Happened — facts with data points\nH2: Which Roles and Industries Are Most Affected — specific job titles and sectors\nH2: What This Means for Your Career — 3 specific actions\nFAQ (3 questions): 2–3 sentence answers\nCTA: One relevant tool link\n\nVOICE: Direct, honest, no hype. Every claim sourced.\n\n[PASTE PERPLEXITY RESEARCH NOTES HERE]';
+
+function pillHtml(label, colorObj) {
+  var c = colorObj || {bg:'var(--surface)',color:'var(--label)',border:'var(--border)'};
+  return '<span style="display:inline-block;font-family:var(--mono);font-size:10px;padding:2px 9px;border-radius:20px;border:1.5px solid '+c.border+';background:'+c.bg+';color:'+c.color+';white-space:nowrap">'+label+'</span>';
+}
+function depthHtml(depth) {
+  var isQT = depth && depth.toLowerCase().indexOf('quick') > -1;
+  return '<span style="font-family:var(--mono);font-size:10px;color:'+(isQT?'var(--teal)':'var(--purple)')+'">'+depth+'</span>';
+}
+
+function renderCandidatesTable(data) {
+  var tbody = document.getElementById('picks-tbody');
+  tbody.innerHTML = '';
+  var candidates = data.candidates || [];
+
+  candidates.forEach(function(c, i) {
+    var tierKey = c.tier ? c.tier.split(' ')[0] : 'T1';
+    var tierLabel = (c.tier||'') + (c.cluster ? ' · '+c.cluster : '');
+    var segKey = Object.keys(SEG_COLORS).find(function(k){ return (c.segment||'').indexOf(k) > -1; }) || '';
+    var rowBg = c.news_pick ? 'var(--mint-bg)' : '#fff';
+    var npBadge = c.news_pick ? ' <span style="font-family:var(--mono);font-size:9px;background:var(--lime);color:var(--dark);padding:1px 7px;border-radius:20px;vertical-align:middle">★</span>' : '';
+
+    var tr = document.createElement('tr');
+    tr.id = 'cand-row-'+i;
+    tr.style.cssText = 'background:'+rowBg+';border-top:1px solid var(--border)';
+    tr.innerHTML =
+      '<td style="padding:10px 14px;font-family:var(--mono);font-size:11px;font-weight:600;color:var(--lime-dark);vertical-align:top">'+c.rank+'</td>'+
+      '<td style="padding:10px 14px;font-weight:600;color:var(--text);line-height:1.4;vertical-align:top">'+c.title+npBadge+'<div style="font-family:var(--mono);font-size:10px;color:var(--label);margin-top:3px;font-weight:400">'+c.stat+'</div></td>'+
+      '<td style="padding:10px 14px;vertical-align:top">'+pillHtml(tierLabel, TIER_COLORS[tierKey])+'</td>'+
+      '<td style="padding:10px 14px;vertical-align:top">'+pillHtml(c.segment||'—', SEG_COLORS[segKey])+'</td>'+
+      '<td style="padding:10px 14px;vertical-align:top;white-space:nowrap">'+depthHtml(c.depth)+'</td>'+
+      '<td style="padding:10px 14px;font-size:12.5px;color:var(--sub);line-height:1.5;vertical-align:top">'+c.why+'</td>'+
+      '<td style="padding:10px 8px;vertical-align:top;text-align:center">'+
+        '<div style="display:flex;flex-direction:column;gap:5px">'+
+          '<button id="prompt-btn-'+i+'" onclick="togglePromptPanel('+i+')" style="font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:5px 10px;border-radius:6px;border:1.5px solid var(--lime-dark);background:var(--mint-bg);color:var(--dark);cursor:pointer;white-space:nowrap">Write Prompt</button>'+
+          '<button id="research-btn-'+i+'" onclick="toggleResearchPanel('+i+')" style="font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:5px 10px;border-radius:6px;border:1.5px solid var(--blueb);background:var(--bluebg);color:var(--blue);cursor:pointer;white-space:nowrap">Research</button>'+
+        '</div>'+
+      '</td>';
+    tbody.appendChild(tr);
+
+    // write prompt panel row
+    var ptTr = document.createElement('tr');
+    ptTr.id = 'prompt-panel-'+i;
+    ptTr.style.display = 'none';
+    ptTr.innerHTML = '<td colspan="7" style="padding:0;background:var(--lime-bg);border-top:1px solid #d0e090"><div id="prompt-inner-'+i+'" style="padding:14px 16px"></div></td>';
+    tbody.appendChild(ptTr);
+
+    // research prompt panel row
+    var rsTr = document.createElement('tr');
+    rsTr.id = 'research-panel-'+i;
+    rsTr.style.display = 'none';
+    rsTr.innerHTML = '<td colspan="7" style="padding:0;background:var(--bluebg);border-top:1px solid var(--blueb)"><div id="research-inner-'+i+'" style="padding:14px 16px"></div></td>';
+    tbody.appendChild(rsTr);
+  });
+}
+
+function togglePromptPanel(idx) {
+  var panel = document.getElementById('prompt-panel-'+idx);
+  var btn = document.getElementById('prompt-btn-'+idx);
+  if (panel.style.display !== 'none') {
+    panel.style.display = 'none';
+    btn.textContent = 'Write Prompt';
+    return;
+  }
+  // close all open panels
+  document.querySelectorAll('[id^="prompt-panel-"],[id^="research-panel-"]').forEach(function(p){ p.style.display='none'; });
+  document.querySelectorAll('[id^="prompt-btn-"]').forEach(function(b){ b.textContent='Write Prompt'; });
+  document.querySelectorAll('[id^="research-btn-"]').forEach(function(b){ b.textContent='Research'; });
+
+  var candidates = window._candidatesData ? window._candidatesData.candidates : [];
+  var c = candidates[idx];
+  if (!c) return;
+
+  var isQT = c.depth && c.depth.toLowerCase().indexOf('quick') > -1;
+  var basePrompt = isQT ? QT_PROMPT : FR_PROMPT;
+  var filled = basePrompt.replace('[TITLE]', c.title).replace('[CLUSTER]', c.cluster||c.category||'');
+
+  var inner = document.getElementById('prompt-inner-'+idx);
+  inner.innerHTML =
+    '<div style="font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#3d5a10;margin-bottom:10px">'+
+      (isQT ? 'Quick Take (300–450w)' : 'Full Reaction (700–900w)')+
+      ' — <span style="color:var(--label)">copy into Claude, paste your Perplexity research notes at the bottom</span>'+
+    '</div>'+
+    '<div style="position:relative">'+
+      '<textarea id="gen-prompt-'+idx+'" style="width:100%;font-family:var(--mono);font-size:12px;line-height:1.7;color:var(--text);background:#fff;border:1.5px solid #d0e090;border-radius:8px;padding:12px 14px;resize:vertical;outline:none;min-height:200px">'+escHtml(filled)+'</textarea>'+
+      '<button onclick="copyGenPrompt(\'gen-prompt-'+idx+'\',this)" style="position:absolute;top:8px;right:8px;font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:4px 12px;border-radius:6px;border:1.5px solid #d0e090;background:var(--lime-bg);color:var(--dark);cursor:pointer">Copy</button>'+
+    '</div>';
+
+  panel.style.display = 'table-row';
+  btn.textContent = 'Close';
+}
+
+function toggleResearchPanel(idx) {
+  var panel = document.getElementById('research-panel-'+idx);
+  var btn = document.getElementById('research-btn-'+idx);
+  if (panel.style.display !== 'none') {
+    panel.style.display = 'none';
+    btn.textContent = 'Research';
+    return;
+  }
+  // close all open panels
+  document.querySelectorAll('[id^="prompt-panel-"],[id^="research-panel-"]').forEach(function(p){ p.style.display='none'; });
+  document.querySelectorAll('[id^="prompt-btn-"]').forEach(function(b){ b.textContent='Write Prompt'; });
+  document.querySelectorAll('[id^="research-btn-"]').forEach(function(b){ b.textContent='Research'; });
+
+  var candidates = window._candidatesData ? window._candidatesData.candidates : [];
+  var c = candidates[idx];
+  if (!c) return;
+
+  var researchPrompt = 'I am writing a news article for MyCareerPal on the following story. Search the web for the most recent, accurate information and return structured research notes I can use to write the article.\n\n' +
+    'STORY: ' + c.title + '\n' +
+    'TOPIC CLUSTER: ' + (c.cluster||c.category||'') + '\n' +
+    'KEY STAT / HOOK: ' + (c.stat||'') + '\n\n' +
+    'FIND AND RETURN:\n' +
+    '1. What exactly happened — event, announcement, or data release (source + date)\n' +
+    '2. The key statistic or data point with its exact source (BLS, LinkedIn Workforce Insights, Indeed Hiring Lab, Glassdoor, company filing, McKinsey, WEF etc.)\n' +
+    '3. Which roles, industries, or types of workers are most affected\n' +
+    '4. Any expert quotes or reactions (attributed, with source)\n' +
+    '5. Relevant context — how does this compare to previous data or recent trend\n' +
+    '6. What US professionals should know or do in response\n\n' +
+    'FORMAT: structured notes, not an article. Bullet points under each heading. Every data point must include its source and date. Flag any figures you cannot verify.';
+
+  var inner = document.getElementById('research-inner-'+idx);
+  inner.innerHTML =
+    '<div style="font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue);margin-bottom:10px">'+
+      'Perplexity Research Prompt — <span style="color:var(--label)">copy into Perplexity, paste the notes back into the Write Prompt</span>'+
+    '</div>'+
+    '<div style="position:relative">'+
+      '<textarea id="res-prompt-'+idx+'" style="width:100%;font-family:var(--mono);font-size:12px;line-height:1.7;color:var(--text);background:#fff;border:1.5px solid var(--blueb);border-radius:8px;padding:12px 14px;resize:vertical;outline:none;min-height:180px">'+escHtml(researchPrompt)+'</textarea>'+
+      '<button onclick="copyGenPrompt(\'res-prompt-'+idx+'\',this)" style="position:absolute;top:8px;right:8px;font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:4px 12px;border-radius:6px;border:1.5px solid var(--blueb);background:var(--bluebg);color:var(--blue);cursor:pointer">Copy</button>'+
+    '</div>';
+
+  panel.style.display = 'table-row';
+  btn.textContent = 'Close';
+}
+
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function copyGenPrompt(taId, btn) {
+  var ta = document.getElementById(taId);
+  if (!ta) return;
+  ta.select();
+  try { document.execCommand('copy'); } catch(e) { try { navigator.clipboard.writeText(ta.value); } catch(e2) {} }
+  btn.textContent = '✓ Copied';
+  setTimeout(function(){ btn.textContent = 'Copy'; }, 2000);
+}
+
+// ── GOOGLE SHEETS INTEGRATION ─────────────────────────────────────────────
+var APPS_SCRIPT_URL = 'https://script.google.com/a/macros/mycareerpal.com/s/AKfycbznZfx_s3A0ldMp0qlAhn3I8vBACAsgif_JRMgfmKEZ4o73lyksOZg2gBBj4y8g_z2c/exec';
+
+async function fetchTrackerRows() {
+  try {
+    var res = await fetch(APPS_SCRIPT_URL + '?action=read', {
+      redirect: 'follow',
+      mode: 'cors'
+    });
+    var data = await res.json();
+    return data.rows || [];
+  } catch(e) {
+    console.warn('Tracker fetch failed:', e.message);
+    return [];
+  }
+}
+
+async function runPickMy3() {
+  var table = document.getElementById('pick-input').value.trim();
+  if (!table) { alert('Paste the candidate table from Step 1 first.'); return; }
+
+  var systemPrompt = document.getElementById('pick-system-prompt').value.trim();
+  var btn = document.getElementById('pick-btn');
+  var statusEl = document.getElementById('pick-status');
+  var outputEl = document.getElementById('pick-output');
+
+  btn.textContent = 'Fetching tracker…';
+  btn.disabled = true;
+  outputEl.style.display = 'block';
+  statusEl.textContent = 'Checking tracker…';
+  document.getElementById('picks-tbody').innerHTML = '<tr><td colspan="7" style="padding:24px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--label)">Fetching Content Tracker for duplication check…</td></tr>';
+
+  // fetch tracker rows for duplication check
+  var trackerRows = await fetchTrackerRows();
+  var publishedTitles = trackerRows
+    .filter(function(r){ return r.status === 'Published'; })
+    .map(function(r){ return r.title + ' [' + r.cluster + ']'; });
+
+  var dupeContext = publishedTitles.length > 0
+    ? '\n\nDUPLICATION CHECK — these titles have already been published. Flag any candidate that covers the same story or angle as one of these as [DUPLICATE] and rank it last:\n' + publishedTitles.map(function(t,i){ return (i+1)+'. '+t; }).join('\n')
+    : '\n\n(No published articles in tracker yet — no duplication check needed.)';
+
+  btn.textContent = 'Reviewing…';
+  statusEl.textContent = 'Ranking candidates…';
+  document.getElementById('picks-tbody').innerHTML = '<tr><td colspan="7" style="padding:24px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--label)">Reviewing candidates…</td></tr>';
+
+  var prompt = systemPrompt + dupeContext + '\n\n---\n\nCandidate table:\n' + table;
+
+  try {
+    var response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    var data = await response.json();
+    var text = (data.content||[]).filter(function(b){ return b.type==='text'; }).map(function(b){ return b.text; }).join('\n');
+    var clean = text.replace(/```json|```/g,'').trim();
+    var parsed = JSON.parse(clean);
+    window._candidatesData = parsed;
+    renderCandidatesTable(parsed);
+    statusEl.textContent = parsed.candidates.length + ' candidates ranked' + (publishedTitles.length > 0 ? ' · duplication check ran against ' + publishedTitles.length + ' published articles' : '');
+  } catch(err) {
+    document.getElementById('picks-tbody').innerHTML = '<tr><td colspan="7" style="padding:20px;color:var(--red);font-size:13px">Error: '+(err.message||'unexpected response')+'</td></tr>';
+    statusEl.textContent = 'Error';
+  }
+
+  btn.textContent = 'Review Candidates';
+  btn.disabled = false;
+}
+
+function clearPick() {
+  window._candidatesData = null;
+  document.getElementById('pick-input').value = '';
+  document.getElementById('pick-output').style.display = 'none';
+  document.getElementById('pick-status').textContent = '';
+  document.getElementById('pick-btn').textContent = 'Review Candidates';
+  document.getElementById('pick-btn').disabled = false;
+  document.getElementById('picks-tbody').innerHTML = '';
+}</script>
+
+<div class="footer">MyCareerPal · The Morning Loop · Last updated: June 13, 2026</div>
+</body>
+</html>
